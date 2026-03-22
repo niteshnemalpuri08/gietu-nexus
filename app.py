@@ -1,4 +1,4 @@
-CONFIGimport streamlit as st
+import streamlit as st
 import os, requests, smtplib, shutil, json, hashlib, time, re
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
