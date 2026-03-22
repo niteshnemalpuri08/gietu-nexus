@@ -1,4 +1,4 @@
-import streamlit as st
+CONFIGimport streamlit as st
 import os, requests, smtplib, shutil, json, hashlib, time, re
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
@@ -16,10 +16,7 @@ try:
 except ImportError:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-try:
-    from langchain_ollama import OllamaLLM
-except ImportError:
-    from langchain_community.llms import Ollama as OllamaLLM
+from langchain_groq import ChatGroq
 
 from langchain_community.vectorstores import FAISS
 
@@ -720,7 +717,7 @@ with st.sidebar:
 
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown("**🤖 LLM Settings**")
-    llm_model = st.selectbox("Model", ["phi3", "llama3", "mistral", "gemma", "llama3.2"], index=0)
+   llm_model = st.selectbox("Model", ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"], index=0)
     top_k     = st.slider("Context chunks (K)", 2, 8, 4)
     tts_on    = st.toggle("🔊 Voice replies", value=False)
 
@@ -840,7 +837,7 @@ with tab_search:
                 ctx = "\n\n".join([d.page_content for d in docs])
 
                 # LLM answer
-                llm = OllamaLLM(model=llm_model)
+                llm = ChatGroq(model="llama3-8b-8192", api_key=st.secrets["GROQ_API_KEY"])
                 prompt = f"""You are GIETU Nexus, a precise university notice search engine aligned with SDG 4 (Quality Education).
 Your mission: extract and present DIRECT, FACTUAL answers from the notice documents.
 
@@ -930,7 +927,7 @@ with tab_chat:
                     with st.expander("🕵️ Evidence retrieved"):
                         st.code(ctx[:1200], language="text")
 
-                    llm = OllamaLLM(model=llm_model)
+                    llm = ChatGroq(model="llama3-8b-8192", api_key=st.secrets["GROQ_API_KEY"])
                     full_prompt = f"""You are a helpful GIETU university assistant. Use ONLY the CONTEXT below.
 If the answer isn't there, say: "I couldn't find that in the current notices."
 Be concise, highlight dates and deadlines.
@@ -940,7 +937,8 @@ CONTEXT:
 
 QUESTION: {prompt}
 ANSWER:"""
-                    response = llm.invoke(full_prompt)
+                    response = llm.invoke(full_prompt).content
+
 
                     st.markdown(f'<div class="answer-block">{response}</div>', unsafe_allow_html=True)
                     ts_r = datetime.now().isoformat()
